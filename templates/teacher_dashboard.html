@@ -1,0 +1,184 @@
+<!-- templates/teacher_dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Teacher Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Welcome, {{ session['username'] }}!</h2>
+
+    {% if teacher_classes|length > 1 %}
+        <form method="get" action="{{ url_for('teacher.teacher_dashboard') }}">
+            <label for="class-select">Select Class:</label>
+            <select name="class_id" id="class-select" onchange="this.form.submit()">
+                {% for class in teacher_classes %}
+                    <option value="{{ class.id }}" {% if selected_class and selected_class.id == class.id %}selected{% endif %}>
+                        {{ class.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    {% endif %}
+
+    <!-- Display Class-Specific Information -->
+    <h3>Class: {{ selected_class.name }}</h3>
+
+    <!-- Pending Borrow Requests -->
+    <h3 class="mt-5">Pending Borrow Requests</h3>
+    <table class="table table-striped" id="borrowRequestsTable">
+        <thead>
+            <tr>
+                <th>Book Title</th>
+                <th>Student</th>
+                <th>Date Requested</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="borrowRequestsBody">
+            {% for request in pending_requests %}
+                <tr>
+                    <td>{{ request.book.title }}</td>
+                    <td>{{ request.student.name }}</td>
+                    <td>{{ request.borrow_date.strftime('%Y-%m-%d') if request.borrow_date else 'N/A' }}</td>
+                    <td>
+                        <form action="{{ url_for('teacher.approve_borrow', request_id=request.id) }}" method="POST" style="display:inline-block;">
+                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                        </form>
+                        <form action="{{ url_for('teacher.reject_borrow', request_id=request.id) }}" method="POST" style="display:inline-block;">
+                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4">No pending borrow requests.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pending Donation Requests -->
+    <h3 class="mt-5">Pending Donation Requests</h3>
+    <table class="table table-striped" id="donationRequestsTable">
+        <thead>
+            <tr>
+                <th>Book Title</th>
+                <th>Student</th>
+                <th>Date Submitted</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="donationRequestsBody">
+            {% for request in pending_donations %}
+                <tr>
+                    <td>{{ request.title }}</td>
+                    <td>{{ request.student.name }}</td>
+                    <td>{{ request.submitted_at.strftime('%Y-%m-%d') if request.submitted_at else 'N/A' }}</td>
+                    <td>
+                        <form action="{{ url_for('teacher.approve_donation', donation_id=request.id) }}" method="POST" style="display:inline-block;">
+                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                        </form>
+                        <form action="{{ url_for('teacher.reject_donation', donation_id=request.id) }}" method="POST" style="display:inline-block;">
+                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4">No pending donation requests.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Books in Class Inventory -->
+    <h3 class="mt-5">Books in Class Inventory</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Cover</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Donated By</th>
+                <th>Borrowed By</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+                <tr>
+                    <td>
+                        {% if book.cover_url %}
+                            <img src="{{ book.cover_url }}" alt="{{ book.title }}" class="img-thumbnail book-cover-thumb">
+                        {% elif book.cover_filename %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ book.cover_filename) }}" alt="{{ book.title }}" class="img-thumbnail book-cover-thumb">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/default_cover.png') }}" alt="No cover available" class="img-thumbnail book-cover-thumb">
+                        {% endif %}
+                    </td>
+                    <td><a href="{{ url_for('teacher.book_details', book_id=book.id) }}">{{ book.title }}</a></td>
+                    <td>{{ book.author }}</td>
+                    <td>{{ book.donor.name if book.donor else 'Unknown' }}</td>
+                    <td>{{ book.borrower.name if book.borrower else 'Available' }}</td>
+                    <td>
+                        <form action="{{ url_for('teacher.delete_book', book_id=book.id) }}" method="POST" style="display:inline-block;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this book?')">Delete</button>
+                        </form>
+                        <a href="{{ url_for('teacher.edit_book', book_id=book.id) }}" class="btn btn-info btn-sm">Edit</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6">No books in your class inventory.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Active Borrows -->
+    <h3 class="mt-5">Active Borrows</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Book Title</th>
+                <th>Borrow Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for borrow in active_borrows %}
+                <tr>
+                    <td>{{ borrow.student.name }}</td>
+                    <td>{{ borrow.book.title }}</td>
+                    <td>{{ borrow.borrow_date.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <form action="{{ url_for('teacher.return_book', borrow_id=borrow.id) }}" method="POST">
+                            <button type="submit" class="btn btn-warning btn-sm">Mark as Returned</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4">No active borrows.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Class Students -->
+    <h3 class="mt-5">Class Students</h3>
+    <ul class="list-group">
+        {% for student in students %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ student.name }}
+                <a href="{{ url_for('teacher.student_history', student_id=student.id) }}" class="btn btn-info btn-sm">View History</a>
+            </li>
+        {% else %}
+            <li class="list-group-item">No students in this class.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+
+{% endblock %}

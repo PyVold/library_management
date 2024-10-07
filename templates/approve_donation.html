@@ -1,0 +1,38 @@
+<!-- templates/approve_donation.html -->
+{% extends "base.html" %}
+
+{% block title %}Approve Donation{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Approve Donation Request</h2>
+    <form method="POST" action="{{ url_for('teacher.approve_donation', donation_id=donation_request.id) }}" enctype="multipart/form-data">
+        <div class="form-group">
+            <label>Book Title:</label>
+            <p>{{ donation_request.title }}</p>
+        </div>
+        <div class="form-group">
+            <label>Author(s):</label>
+            <p>{{ donation_request.author }}</p>
+        </div>
+        {% if donation_request.series %}
+        <div class="form-group">
+            <label>Series:</label>
+            <p>{{ donation_request.series }}</p>
+        </div>
+        {% endif %}
+        {% if donation_request.isbn %}
+        <div class="form-group">
+            <label>ISBN:</label>
+            <p>{{ donation_request.isbn }}</p>
+        </div>
+        {% endif %}
+        <div class="form-group">
+            <label for="cover_image">Upload Cover Image (Optional):</label>
+            <input type="file" class="form-control-file" id="cover_image" name="cover_image" accept="image/*">
+        </div>
+        <button type="submit" class="btn btn-success">Approve Donation</button>
+        <a href="{{ url_for('teacher.teacher_dashboard') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

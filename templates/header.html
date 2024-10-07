@@ -1,0 +1,54 @@
+<!-- templates/header.html -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Library Management System</a>
+    {% if session.get('role') == 'admin' %}
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarAdmin" aria-controls="navbarAdmin" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarAdmin">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.add_class') }}">Add Class</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.add_teacher') }}">Add Teacher</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.add_student') }}">Add Student</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.assign_teacher') }}">Assign Teacher</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.assign_student') }}">Assign Student</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.change_password') }}">Change Password</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
+        </ul>
+    </div>
+    {% elif session.get('role') == 'teacher' %}
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTeacher" aria-controls="navbarTeacher" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarTeacher">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('teacher.teacher_dashboard') }}">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.change_password') }}">Change Password</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('teacher.add_book') }}">Add Books</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
+            
+
+        </ul>
+    </div>
+    {% elif session.get('role') == 'student' %}
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarStudent" aria-controls="navbarStudent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarStudent">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('student.index') }}">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('student.request_donate') }}">Donate Book</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.change_password') }}">Change Password</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
+        </ul>
+    </div>
+    {% else %}
+    <!-- For users not logged in or with an unknown role -->
+    <div class="collapse navbar-collapse">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>
+        </ul>
+    </div>
+    {% endif %}
+</nav>

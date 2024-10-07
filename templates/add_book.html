@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Add Book{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Add a New Book</h2>
+    <form action="{{ url_for('teacher.add_book') }}" method="POST">
+        <div class="form-group">
+            <label for="title">Book Title</label>
+            <input type="text" class="form-control" id="title" name="title" required>
+        </div>
+
+        <div class="form-group">
+            <label for="series">Series (optional)</label>
+            <input type="text" class="form-control" id="series" name="series">
+        </div>
+
+        <div class="form-group">
+            <label for="author">Author</label>
+            <input type="text" class="form-control" id="author" name="author" required>
+        </div>
+
+        <div class="form-group">
+            <label for="isbn">ISBN (optional)</label>
+            <input type="text" class="form-control" id="isbn" name="isbn">
+        </div>
+
+        <div class="form-group">
+            <label for="class_id">Class</label>
+            <select class="form-control" id="class_id" name="class_id" required>
+                {% for class_ in classes %}
+                    <option value="{{ class_.id }}">{{ class_.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add Book</button>
+    </form>
+</div>
+{% endblock %}

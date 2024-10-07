@@ -1,0 +1,61 @@
+<!-- templates/book_details.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4">
+            {% if book.cover_url %}
+                <img src="{{ book.cover_url }}" alt="{{ book.title }}" class="img-thumbnail book-cover">
+            {% elif book.cover_filename %}
+                <img src="{{ url_for('static', filename='uploads/' ~ book.cover_filename) }}" alt="{{ book.title }}" class="img-thumbnail book-cover">
+            {% else %}
+                <img src="{{ url_for('static', filename='images/default_cover.png') }}" alt="No cover available" class="img-thumbnail book-cover">
+            {% endif %}
+        </div>
+        <div class="col-md-8">
+            <h2>{{ book.title }}</h2>
+            {% if book.series %}
+                <p><strong>Series:</strong> {{ book.series }}</p>
+            {% endif %}
+            <p><strong>Author:</strong> {{ book.author }}</p>
+            {% if book.isbn %}
+                <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+            {% endif %}
+            <p><strong>Donated By:</strong> {{ book.donor.name if book.donor else "Unknown" }}</p>
+            <p><strong>Borrowed By:</strong> {{ book.borrower.name if book.borrower else "Available" }}</p>
+            <p><strong>Borrowed Date:</strong> {{ book.borrowed_date.strftime('%Y-%m-%d') if book.borrowed_date else "N/A" }}</p>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h4>Borrow History</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Borrow Date</th>
+                        <th>Return Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for history in book.borrow_histories %}
+                        <tr>
+                            <td>{{ history.student.name }}</td>
+                            <td>{{ history.borrow_date.strftime('%Y-%m-%d') if history.borrow_date else "N/A" }}</td>
+                            <td>{{ history.return_date.strftime('%Y-%m-%d') if history.return_date else "N/A" }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3">No borrow history available.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

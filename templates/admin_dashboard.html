@@ -1,0 +1,125 @@
+<!-- templates/admin_dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Welcome, {{ session['username'] }}!</h2>
+
+    <!-- Classes Section -->
+    <h3 class="mt-5">Classes</h3>
+    <div class="accordion" id="classesAccordion">
+        {% for class in classes %}
+            <div class="card">
+                <div class="card-header" id="heading{{ class.id }}">
+                    <h2 class="mb-0 d-flex justify-content-between align-items-center">
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse{{ class.id }}" aria-expanded="true" aria-controls="collapse{{ class.id }}">
+                            {{ class.name }}
+                        </button>
+                        <div>
+                            <form action="{{ url_for('admin.delete_class', class_id=class.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this class?');">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete Class</button>
+                            </form>
+                        </div>
+                    </h2>
+                </div>
+
+                <div id="collapse{{ class.id }}" class="collapse" aria-labelledby="heading{{ class.id }}" data-parent="#classesAccordion">
+                    <div class="card-body">
+                        <!-- Teachers -->
+                        <h5>Teachers:</h5>
+                        <ul class="list-group mb-3">
+                            {% for teacher in class.teachers %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ teacher.name }}
+                                    <form action="{{ url_for('admin.unassign_teacher', class_id=class.id, teacher_id=teacher.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to unassign this teacher?');">
+                                        <button type="submit" class="btn btn-danger btn-sm">unassign Teacher</button>
+                                    </form>
+                                </li>
+                            {% else %}
+                                <li class="list-group-item">No teachers assigned.</li>
+                            {% endfor %}
+                        </ul>
+
+                        <!-- Students -->
+                        <h5>Students:</h5>
+                        <ul class="list-group mb-3">
+                            {% for student in class.students %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ student.name }}
+                                    <form action="{{ url_for('admin.unassign_student', class_id=class.id, student_id=student.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to unassign this student?');">
+                                        <button type="submit" class="btn btn-danger btn-sm">unassign Student</button>
+                                    </form>
+                                </li>
+                            {% else %}
+                                <li class="list-group-item">No students assigned.</li>
+                            {% endfor %}
+                        </ul>
+
+                        <!-- Books -->
+                        <h5>Books:</h5>
+                        <div class="row">
+                            {% for book in class.books %}
+                                <div class="col-md-4">
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ book.title }}</h5>
+                                            <p class="card-text">Author: {{ book.author }}</p>
+                                            {% if book.series %}
+                                                <p class="card-text">Series: {{ book.series }}</p>
+                                            {% endif %}
+                                            {% if book.borrower %}
+                                                <p class="text-danger">Borrowed by {{ book.borrower.name }}</p>
+                                            {% else %}
+                                                <p class="text-success">Available</p>
+                                            {% endif %}
+                                            <form action="{{ url_for('admin.delete_book', book_id=book.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this book?');">
+                                                <button type="submit" class="btn btn-danger btn-sm">Delete Book</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p>No books in this class.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p>No classes available.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Teachers Section -->
+    <h3 class="mt-5">All Teachers</h3>
+    <ul class="list-group">
+        {% for teacher in teachers %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ teacher.name }}
+                <form action="{{ url_for('admin.delete_teacher', teacher_id=teacher.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this teacher?');">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete Teacher</button>
+                </form>
+            </li>
+        {% else %}
+            <li class="list-group-item">No teachers available.</li>
+        {% endfor %}
+    </ul>
+
+    <!-- Students Section -->
+    <h3 class="mt-5">All Students</h3>
+    <ul class="list-group">
+        {% for student in students %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ student.name }}
+                <form action="{{ url_for('admin.delete_student', student_id=student.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this student?');">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete Student</button>
+                </form>
+            </li>
+        {% else %}
+            <li class="list-group-item">No students available.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

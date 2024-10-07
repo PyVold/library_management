@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Welcome, {{ session['username'] }}!</h2>
+    <h3>Class: {{ student_class.name }}</h3>
+
+    <!-- Available Books -->
+    <h3 class="mt-5">Available Books</h3>
+    <div class="row">
+        {% for book in books %}
+            <div class="col-md-3">
+                <div class="card mb-4">
+                    {% if book.cover_url %}
+                        <img src="{{ book.cover_url }}" alt="{{ book.title }}" class="img-thumbnail card-img-top book-cover">
+                    {% elif book.cover_filename %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ book.cover_filename) }}" alt="{{ book.title }}" class="img-thumbnail book-cover">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='images/default_cover.png') }}" alt="No cover available" class="img-thumbnail card-img-top book-cover">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('student.book_details', book_id=book.id) }}">{{ book.title }}</a>
+                        </h5>
+                        <p class="card-text">Author: {{ book.author }}</p>
+                        {% if book.series %}
+                            <p class="card-text">Series: {{ book.series }}</p>
+                        {% endif %}
+                        {% if book.isbn %}
+                            <p class="card-text">ISBN: {{ book.isbn }}</p>
+                        {% endif %}
+                        <p><strong>Donated by:</strong> {{ book.donor.name if book.donor else 'Unknown' }}</p>
+
+                        <!-- Logic for showing the correct buttons -->
+                        {% if book.id in requested_book_ids %}
+                            <!-- Find and display the cancel button for the corresponding borrow request -->
+                            {% for request in pending_requests %}
+                                {% if request.book_id == book.id %}
+                                    <form action="{{ url_for('student.cancel_request', request_id=request.id) }}" method="POST">
+                                        <button type="submit" class="btn btn-warning btn-block">Cancel Request</button>
+                                    </form>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        {% if book.id in borrowed_book_ids.keys() and return_enabled %}
+                            <!-- Display the Return button if the book is borrowed -->
+                            <form action="{{ url_for('student.return_book', borrow_id=borrowed_book_ids[book.id]) }}" method="POST">
+                                <button type="submit" class="btn btn-warning btn-block">Return Book</button>
+                            </form>
+                        {% elif book.id in borrowed_book_ids.keys() %}
+                            <!-- Display the Borrower Name if the book is borrowed -->
+                            <p class="text-danger">Borrowed by {{ book.borrower.name }}</p>
+                        {% elif not book.borrower and book.id not in requested_book_ids %}
+                            <!-- Allow requesting the book if the student hasn't already borrowed or requested it -->
+                            {% if total_active >= 2 %}
+                                <button class="btn btn-secondary btn-block" disabled>Borrow Limit Reached</button>
+                            {% else %}
+                                <form action="{{ url_for('student.request_borrow', book_id=book.id) }}" method="POST">
+                                    <button type="submit" class="btn btn-primary btn-block">Request to Borrow</button>
+                                </form>
+                            {% endif %}
+                        {% elif book.borrower %}
+                            <p class="text-danger">Borrowed by {{ book.borrower.name }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p>No books available in your class inventory.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Borrow History -->
+    <h3 class="mt-5">Your Borrow History</h3>
+    <table class="table table-striped" id="borrowHistoryTable">
+        <thead>
+            <tr>
+                <th>Book Title</th>
+                <th>Status</th>
+                <th>Borrow Date</th>
+                <th>Return Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="borrowHistoryBody">
+            {% for borrow in borrow_history %}
+                <tr>
+                    <td>{{ borrow.book.title if borrow.book else 'N/A' }}</td>
+                    <td>{{ borrow.status }}</td>
+                    <td>{{ borrow.borrow_date.strftime('%Y-%m-%d') if borrow.borrow_date else 'N/A' }}</td>
+                    <td>{{ borrow.return_date.strftime('%Y-%m-%d') if borrow.return_date else 'N/A' }}</td>
+                    <td>
+                        {% if borrow.return_date == None and borrow.borrow_date != None and return_enabled %}
+                            <!-- Return button if the book is borrowed but not returned -->
+                            <form action="{{ url_for('student.return_book', borrow_id=borrow.id) }}" method="POST">
+                                <button type="submit" class="btn btn-warning btn-block">Return</button>
+                            </form>
+                        {% elif borrow.return_date == None and borrow.borrow_date != None %}
+                            <p>Not Returned<p>
+                        {% else %}
+                            <p>Returned</p>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div id="borrowPagination" class="pagination"></div>
+    
+    <!-- Donation History -->
+    <h3 class="mt-5">Your Donation Requests</h3>
+    <table class="table table-striped" id="donationHistoryTable">
+        <thead>
+            <tr>
+                <th>Book Title</th>
+                <th>Status</th>
+                <th>Submitted On</th>
+            </tr>
+        </thead>
+        <tbody id="donationHistoryBody">
+            {% for donation in donation_requests %}
+                <tr>
+                    <td>{{ donation.title }}</td>
+                    <td>{{ donation.status }}</td>
+                    <td>{{ donation.created_at.strftime('%Y-%m-%d') if donation.created_at else 'N/A' }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div id="donationPagination" class="pagination"></div>
+    
+    <!-- Include the JavaScript file for pagination -->
+    <script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
+
+</div>
+{% endblock %}

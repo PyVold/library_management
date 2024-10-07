@@ -1,0 +1,48 @@
+<!-- templates/request_donate.html -->
+{% extends "base.html" %}
+
+{% block title %}Request to Donate a Book{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Request to Donate a Book</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="alert alert-dismissible fade show">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('student.request_donate') }}" method="POST">
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" class="form-control" id="title" name="title" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="series" class="form-label">Series (Optional)</label>
+            <input type="text" class="form-control" id="series" name="series">
+        </div>
+
+        <div class="mb-3">
+            <label for="author" class="form-label">Author</label>
+            <input type="text" class="form-control" id="author" name="author" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="isbn" class="form-label">ISBN (Optional)</label>
+            <input type="text" class="form-control" id="isbn" name="isbn">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit Donation Request</button>
+        <a href="{{ url_for('student.index') }}" class="btn btn-secondary">Back to Dashboard</a>
+    </form>
+</div>
+{% endblock %}

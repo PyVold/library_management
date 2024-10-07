@@ -1,0 +1,56 @@
+<!-- templates/book_details_teacher.html -->
+{% extends "base.html" %}
+
+{% block title %}Book Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Book Details</h2>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="card-title">{{ book.title }}</h3>
+            <p class="card-text"><strong>Author(s):</strong> {{ book.author }}</p>
+            {% if book.series %}
+                <p class="card-text"><strong>Series:</strong> {{ book.series }}</p>
+            {% endif %}
+            {% if book.isbn %}
+                <p class="card-text"><strong>ISBN:</strong> {{ book.isbn }}</p>
+            {% endif %}
+            <p class="card-text"><strong>Donated by:</strong> {{ book.donor.name if book.donor else 'Unknown' }}</p>
+            {% if book.borrower %}
+                <p class="text-danger"><strong>Currently Borrowed by:</strong> {{ book.borrower.name }}</p>
+            {% else %}
+                <p class="text-success"><strong>Status:</strong> Available</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <h3>Borrow History</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Borrowed By</th>
+                <th>Status</th>
+                <th>Borrow Date</th>
+                <th>Return Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for borrow in borrow_histories %}
+                <tr>
+                    <td>{{ borrow.student.name }}</td>
+                    <td>{{ borrow.status }}</td>
+                    <td>{{ borrow.borrow_date.strftime('%Y-%m-%d') if borrow.borrow_date else 'N/A' }}</td>
+                    <td>{{ borrow.return_date.strftime('%Y-%m-%d') if borrow.return_date else 'N/A' }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4">No borrow history for this book.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('teacher.teacher_dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+{% endblock %}

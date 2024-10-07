@@ -1,0 +1,38 @@
+<!-- templates/assign_student.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Assign Student to Class</title>
+</head>
+<body>
+    <h2>Assign Student to Class</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+            {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <form action="{{ url_for('admin.assign_student') }}" method="POST">
+        <label for="class_id">Select Class:</label>
+        <select name="class_id" id="class_id">
+            {% for class in classes %}
+                <option value="{{ class.id }}">{{ class.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="student_id">Select Student:</label>
+        <select name="student_id" id="student_id">
+            {% for student in students %}
+                <option value="{{ student.id }}">{{ student.name }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Assign Student</button>
+    </form>
+    <a href="{{ url_for('admin.admin_dashboard') }}">Back to Dashboard</a>
+</body>
+</html>
